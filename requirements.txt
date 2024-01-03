@@ -1,0 +1,16 @@
+transformers
+gradio
+sentencepiece
+accelerate
+
+# needed for phi
+einops
+
+# for bark
+scipy
+
+# older version for stability
+-f https://download.pytorch.org/whl/cu118
+torch 
+torchvision 
+torchaudio
