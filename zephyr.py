@@ -53,7 +53,7 @@ def runLLM(input_query):
     print(f"#################  matches {matches}")
     result = matches[1]
 
-    print(f"################ result {type(result), result}")
+    print(f"################ cleaned result: { result}")
 
     return result
 
@@ -111,6 +111,8 @@ bark_model.to(device)
 voice_preset = "v2/en_speaker_6"
 
 def runTTS2(input_query):
+    print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runTTS2     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
+
     # Process text input
     inputs = bark_processor(input_query if True else "The James Webb Space Telescope has captured stunning images of the Whirlpool spiral galaxy, located 27 million light-years away from Earth.", voice_preset=voice_preset)
 
@@ -118,9 +120,14 @@ def runTTS2(input_query):
     for key in inputs.keys():
         inputs[key] = inputs[key].to(device)
 
+    tic = time.perf_counter()
+    
     # Generate audio
     audio_array = bark_model.generate(**inputs)
     audio_array = audio_array.cpu().numpy().squeeze()
+
+    toc = time.perf_counter()
+    print(f"████████████████ TTS generated in {(toc - tic)/60:0.4f} minutes ████████████████")
 
     # Get the current date and time
     now = datetime.now()
@@ -137,8 +144,11 @@ def runTTS2(input_query):
 
     # Stop the clock and print the elapsed time
     end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"The process took {elapsed_time:.2f} seconds.")
+    elapsed_time = (end_time - start_time)/60
+    print(f"The process took {elapsed_time:.2f} minutes.")
+
+    tuk = time.perf_counter()
+    print(f"████████████████ TTS2 Finished in {(tuk - toc)/60:0.4f} minutes ████████████████")
 
     return filename
 
