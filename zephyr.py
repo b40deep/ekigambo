@@ -1,8 +1,11 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import time
+# for whisper stt
+from transformers import pipeline
 # for bark tts
 from transformers import AutoProcessor, BarkModel
 import scipy 
+
 
 llm_tokenizer = AutoTokenizer.from_pretrained('stabilityai/stablelm-zephyr-3b')
 llm_model = AutoModelForCausalLM.from_pretrained(
@@ -59,25 +62,41 @@ def runLLM(input_query):
 
 
 #####################################################################
+#####################     whisper stt      ##########################
+#####################################################################
+
+whisper_model = pipeline("automatic-speech-recognition", model="openai/whisper-base")
+
+def runSTT(audio):
+    print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runSTT     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
+    tic = time.perf_counter()
+    result = whisper_model(audio)["text"]
+    toc = time.perf_counter()
+    print(f"################ stt result: { result}")
+    print(f"████████████████ STT finished in {(toc - tic)/60:0.4f} minutes ████████████████")
+    return result
+
+
+#####################################################################
 #####################     bark tts      #############################
 #####################################################################
-bark_processor = AutoProcessor.from_pretrained("suno/bark-small")
-bark_model = BarkModel.from_pretrained("suno/bark-small")
-voice_preset = "v2/en_speaker_6"
+# bark_processor = AutoProcessor.from_pretrained("suno/bark-small")
+# bark_model = BarkModel.from_pretrained("suno/bark-small")
+# voice_preset = "v2/en_speaker_6"
 
-def runTTS(input_query):
-    print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runTTS     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
-    inputs = bark_processor(input_query, voice_preset=voice_preset)
-    tic = time.perf_counter()
-    audio_array = bark_model.generate(**inputs)
-    toc = time.perf_counter()
-    print(f"████████████████ TTS generated in {(toc - tic)/60:0.4f} minutes ████████████████")
-    audio_array = audio_array.cpu().numpy.squeeze()
-    sample_rate = bark_model.generation_config.sample_rate
-    scipy.io.wavfile.write("test.wav", rate=sample_rate, data=audio_array)
-    tuk = time.perf_counter()
-    print(f"████████████████ TTS Finished in {(tuk - toc)/60:0.4f} minutes ████████████████")
-    return 'test.wav'
+# def runTTS(input_query):
+#     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runTTS     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
+#     inputs = bark_processor(input_query, voice_preset=voice_preset)
+#     tic = time.perf_counter()
+#     audio_array = bark_model.generate(**inputs)
+#     toc = time.perf_counter()
+#     print(f"████████████████ TTS generated in {(toc - tic)/60:0.4f} minutes ████████████████")
+#     audio_array = audio_array.cpu().numpy.squeeze()
+#     sample_rate = bark_model.generation_config.sample_rate
+#     scipy.io.wavfile.write("test.wav", rate=sample_rate, data=audio_array)
+#     tuk = time.perf_counter()
+#     print(f"████████████████ TTS Finished in {(tuk - toc)/60:0.4f} minutes ████████████████")
+#     return 'test.wav'
 
 from transformers import AutoProcessor, BarkModel
 from datetime import datetime
@@ -121,7 +140,7 @@ def runTTS2(input_query):
         inputs[key] = inputs[key].to(device)
 
     tic = time.perf_counter()
-    
+
     # Generate audio
     audio_array = bark_model.generate(**inputs)
     audio_array = audio_array.cpu().numpy().squeeze()
@@ -153,11 +172,12 @@ def runTTS2(input_query):
     return filename
 
 
-def runCombined(input_query):
+def runCombined(ui_input):
     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runCombined     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
-    # temp = runLLM(input_query)
-    temp=input_query
-    result = runTTS2(temp)
+    to_llm = runSTT(ui_input)
+    to_tts = runLLM(to_llm)
+    # to_tts=ui_input
+    result = runTTS2(to_tts)
     # return 'bark_out_20240103_201332.wav'
     return result
 
@@ -166,5 +186,6 @@ def runCombined(input_query):
 #####################################################################
 
 import gradio as gr
-iface = gr.Interface(fn=runCombined,inputs="text",outputs="audio",live=False)
+in_mic = gr.Audio(sources=["microphone"],type="filepath")
+iface = gr.Interface(fn=runCombined,inputs=in_mic,outputs="audio",live=False)
 iface.launch(debug=True)

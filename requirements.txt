@@ -9,6 +9,10 @@ einops
 # for bark
 scipy
 
+# for whisper
+ffmpeg
+ffmpeg-python
+
 # older version for stability
 -f https://download.pytorch.org/whl/cu118
 torch 

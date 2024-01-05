@@ -30,14 +30,22 @@ from https://pytorch.org/get-started/previous-versions/
 ### symlink to move cache to another location
 mklink /J C:\users\.cache\huggingface E:\boyd_cache\huggingface
 
+### ffmpeg install for the text to speech [currently using bark]
+https://www.wikihow.com/Install-FFmpeg-on-Windows to download and install
+then ffmpeg and ffmpeg-python added to the deps
+
 ## tracking the model tests:
 - flan was for translation. works well but base model is not good.
 - phi is for text gen. not great output.
 - dolly was better but also not good output.
 - zephyr gave excellent output, so now I need to learn to adjust it to my needs.
 
-## thoughts thus far:
+## thoughts thus far / todo list:
 - all experiments have been on commandline. If I load the model into gradio, then maybe it will not need to cold boot so I'll get faster subsequent responses?
     - sorted this out. the model now remains in VRAM until the gradio is closed and server is terminated (Ctrl+C in terminal). 
 - I need to find a way to read entire paragraphs with bark. it's currently not completing ALL the input I give to it.
-- then I need to add speech to text so that we can speak the query rather than type it. [working on this next]
+    - bark is currently the weakest link in the chain. takes ages and hallucinates the for a mere two sentences. need to look for work-around or replacement.
+- then I need to add speech to text so that we can speak the query rather than type it. [working on this next] [done, added whisper-base which is super fast and accurate!]
+- also need to add actual versions of deps in requirements.txt because the deps whack-a-mole game is NOT fun! 
+- also want to screenshot the system on idle and then running one, two, and three models to see resource usage. That'll be fun, I think.
+- given the above point, I will need to modularise model imports so that I can test each independently without having to comment out code. This will also help me not have 3 models hogging all the VRAM when I'm not using them.
