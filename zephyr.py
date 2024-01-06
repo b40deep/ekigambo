@@ -6,14 +6,25 @@ from transformers import pipeline
 from transformers import AutoProcessor, BarkModel
 import scipy 
 
+llm_tokenizer = None
+llm_model = None
 
-llm_tokenizer = AutoTokenizer.from_pretrained('stabilityai/stablelm-zephyr-3b')
-llm_model = AutoModelForCausalLM.from_pretrained(
-    'stabilityai/stablelm-zephyr-3b',
-    trust_remote_code=True,
-    device_map="auto"
-)
+def loadLLM():
+    print('loading LLM works')
+    global llm_tokenizer 
+    global llm_model
 
+    llm_tokenizer = AutoTokenizer.from_pretrained('stabilityai/stablelm-zephyr-3b')
+    llm_model = AutoModelForCausalLM.from_pretrained(
+        'stabilityai/stablelm-zephyr-3b',
+        trust_remote_code=True,
+        device_map="auto"
+    )
+
+def loadTTS():
+    print('loading TTS works')
+def loadSTT():
+    print('loading STT works')
 
 def runLLM(input_query):
     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runLLM     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
@@ -133,16 +144,18 @@ def runTTS2(input_query):
     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runTTS2     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
 
     # Process text input
-    inputs = bark_processor(input_query if True else "The James Webb Space Telescope has captured stunning images of the Whirlpool spiral galaxy, located 27 million light-years away from Earth.", voice_preset=voice_preset)
-
+    inputs = bark_processor(input_query if len(input_query)>2 else "The James Webb Space Telescope has captured stunning images of the Whirlpool spiral galaxy, located 27 million light-years away from Earth.", voice_preset=voice_preset)
     # Move inputs to the same device as the model
     for key in inputs.keys():
         inputs[key] = inputs[key].to(device)
 
+    # add attention mask here
+    attention_mask = inputs["attention_mask"]
     tic = time.perf_counter()
 
     # Generate audio
-    audio_array = bark_model.generate(**inputs)
+    audio_array = bark_model.generate(input_ids=inputs["input_ids"], 
+    attention_mask=attention_mask)
     audio_array = audio_array.cpu().numpy().squeeze()
 
     toc = time.perf_counter()
@@ -167,14 +180,27 @@ def runTTS2(input_query):
     print(f"The process took {elapsed_time:.2f} minutes.")
 
     tuk = time.perf_counter()
-    print(f"████████████████ TTS2 Finished in {(tuk - toc)/60:0.4f} minutes ████████████████")
+    print(f"████████████████ TTS2 Finished in {(tuk - tic)/60:0.4f} minutes ████████████████")
 
     return filename
 
 
-def runCombined(ui_input):
+# def runCombined(ui_input):
+#     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runCombined     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
+#     to_llm = runSTT(ui_input)
+#     to_tts = runLLM(to_llm)
+#     # to_tts=ui_input
+#     result = runTTS2(to_tts)
+#     # return 'bark_out_20240103_201332.wav'
+#     return result
+
+def runCombined(mic, models):
     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runCombined     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
-    to_llm = runSTT(ui_input)
+    if len(models)>0:
+        for item in models:
+            loadSTT() if item == 'STT' else loadLLM() if item == 'LLM' else loadTTS() if item == 'TTS' else None
+
+    to_llm = runSTT(mic)
     to_tts = runLLM(to_llm)
     # to_tts=ui_input
     result = runTTS2(to_tts)
@@ -187,5 +213,6 @@ def runCombined(ui_input):
 
 import gradio as gr
 in_mic = gr.Audio(sources=["microphone"],type="filepath")
-iface = gr.Interface(fn=runCombined,inputs=in_mic,outputs="audio",live=False)
+in_models = gr.CheckboxGroup(["STT", "LLM", "TTS"], label="Models", info="Which model to load?")
+iface = gr.Interface(fn=runCombined,inputs=[in_mic,in_models],outputs="audio",live=False)
 iface.launch(debug=True)

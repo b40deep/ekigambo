@@ -40,12 +40,28 @@ then ffmpeg and ffmpeg-python added to the deps
 - dolly was better but also not good output.
 - zephyr gave excellent output, so now I need to learn to adjust it to my needs.
 
+## snapshot of resource usage:
+1. Whisper Speech to Text  
+- Result: So, is the Christian Bible in less than 50 words? [was supposed to be 'Summarise the Christian Bible in less than 50 words']
+- Time taken: STT finished in 0.0471 minutes
+2. Zephyr LLM
+- Result: No, the Christian Bible is not in less than 50 words. Aa... And even if it was, it's way too big for just 50 words! The Christian Bible has two main parts: the Old Testament and the New Testament. The Old Testament has 39 books, and the New Testament has 27 books. Togeth...er, there are 66 books and some extra things like prophecies, letters, list of books, and things people kept saying about the books. If you put them all together, it would be more than 50 words!
+- Time taken: LLM Finished in 2.9646 minutes
+3. Bark Text to Speech
+- Result: <audio src="bark_out_20240106_022056.wav" controls title="Bark TTS result"></audio>
+- Time taken: 4.83 minutes
+4. Resource usage
+![Screenshots showing laptop baseline and load numbers for CPU, GPU, and RAM](/images/start.jpg "Baseline to Under-Load statistics")
+![Screenshots showing laptop baseline and load numbers for CPU, GPU, and RAM](/images/end.jpg " Under-Load to Baseline statistics")
+
 ## thoughts thus far / todo list:
-- all experiments have been on commandline. If I load the model into gradio, then maybe it will not need to cold boot so I'll get faster subsequent responses?
+- ✅all experiments have been on commandline. If I load the model into gradio, then maybe it will not need to cold boot so I'll get faster subsequent responses?
     - sorted this out. the model now remains in VRAM until the gradio is closed and server is terminated (Ctrl+C in terminal). 
-- I need to find a way to read entire paragraphs with bark. it's currently not completing ALL the input I give to it.
+- 📝I need to find a way to read entire paragraphs with bark. it's currently not completing ALL the input I give to it.
     - bark is currently the weakest link in the chain. takes ages and hallucinates the for a mere two sentences. need to look for work-around or replacement.
-- then I need to add speech to text so that we can speak the query rather than type it. [working on this next] [done, added whisper-base which is super fast and accurate!]
+    - found this [https://github.com/espnet/espnet/] that might be a better alternative to bark. haven't yet tested it and might need to return this laptop before I get to. We'll see.
+- ✅then I need to add speech to text so that we can speak the query rather than type it. [working on this next] [done, added whisper-base which is super fast and accurate!]
 - also need to add actual versions of deps in requirements.txt because the deps whack-a-mole game is NOT fun! 
-- also want to screenshot the system on idle and then running one, two, and three models to see resource usage. That'll be fun, I think.
+- ✅also want to screenshot the system on idle and then running one, two, and three models to see resource usage. That'll be fun, I think.
 - given the above point, I will need to modularise model imports so that I can test each independently without having to comment out code. This will also help me not have 3 models hogging all the VRAM when I'm not using them.
+    - done this for just the LLM. The concept works but I'll need to rework my gradio so that all models are swappale without causing exceptions.
