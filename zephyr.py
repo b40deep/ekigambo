@@ -26,6 +26,10 @@ def loadTTS():
 def loadSTT():
     print('loading STT works')
 
+#####################################################################
+######################     zephyr llm      ##########################
+#####################################################################
+
 def runLLM(input_query):
     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runLLM     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
 
@@ -91,23 +95,6 @@ def runSTT(audio):
 #####################################################################
 #####################     bark tts      #############################
 #####################################################################
-# bark_processor = AutoProcessor.from_pretrained("suno/bark-small")
-# bark_model = BarkModel.from_pretrained("suno/bark-small")
-# voice_preset = "v2/en_speaker_6"
-
-# def runTTS(input_query):
-#     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runTTS     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
-#     inputs = bark_processor(input_query, voice_preset=voice_preset)
-#     tic = time.perf_counter()
-#     audio_array = bark_model.generate(**inputs)
-#     toc = time.perf_counter()
-#     print(f"████████████████ TTS generated in {(toc - tic)/60:0.4f} minutes ████████████████")
-#     audio_array = audio_array.cpu().numpy.squeeze()
-#     sample_rate = bark_model.generation_config.sample_rate
-#     scipy.io.wavfile.write("test.wav", rate=sample_rate, data=audio_array)
-#     tuk = time.perf_counter()
-#     print(f"████████████████ TTS Finished in {(tuk - toc)/60:0.4f} minutes ████████████████")
-#     return 'test.wav'
 
 from transformers import AutoProcessor, BarkModel
 from datetime import datetime
@@ -185,14 +172,7 @@ def runTTS2(input_query):
     return filename
 
 
-# def runCombined(ui_input):
-#     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runCombined     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
-#     to_llm = runSTT(ui_input)
-#     to_tts = runLLM(to_llm)
-#     # to_tts=ui_input
-#     result = runTTS2(to_tts)
-#     # return 'bark_out_20240103_201332.wav'
-#     return result
+
 
 def runCombined(mic, models):
     print('╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦     runCombined     ╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦╦')
