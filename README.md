@@ -6,7 +6,7 @@ A 40-year-old man stands at the door of his house, eyes closed and listening int
 
 ## Why does this project exist?
 
-I started this project to immerse myself in the world of open-source AI models. My goal is to build a platform where I can dictate my journal entry, and have it transcibed, and stored securely. Then I want it processed by the LLM assistant and the feedback is given to me as an audio I can listen to.
+I started this project to immerse myself in the world of open-source AI models. My goal is to add accessibility to LLM interaction using speech (hence the real-world scenario above that includes BLV in the usecases). I wonder if I can build a platform where I can dictate my journal entry, and have it transcibed, and stored securely. Then I want it processed by the LLM assistant and the feedback is given to me as an audio I can listen to.
 It would entail:
 
 - speech to text model
